@@ -70,11 +70,39 @@ app.get("/api/leaderboard", async (_req, res) => {
   }
 });
 
+// Score bounds derived from game rules: 8 rounds, best = 8×25 = 200, worst = 8×(−20) = −160
+const GAME_ROUNDS = 8;
+const MAX_POINTS_PER_ROUND = 25;  // "catch" action
+const MIN_POINTS_PER_ROUND = -20; // "surrender" action
+const MAX_ACHIEVABLE_SCORE = GAME_ROUNDS * MAX_POINTS_PER_ROUND;  // 200
+const MIN_ACHIEVABLE_SCORE = GAME_ROUNDS * MIN_POINTS_PER_ROUND;  // -160
+
 app.post("/api/leaderboard", async (req, res) => {
   const body = req.body || {};
   const name = String(body.name || "Anonymous").slice(0, 24).trim() || "Anonymous";
-  const bestScore = clampInt(body.bestScore, -10000, 10000, 0);
-  const surrenderRate = clampInt(body.surrenderRate, 0, 100, 0);
+
+  const rawScore = parseInt(body.bestScore, 10);
+  if (Number.isNaN(rawScore)) {
+    return res.status(400).json({ error: "Invalid score: must be a number." });
+  }
+  if (rawScore > MAX_ACHIEVABLE_SCORE) {
+    return res.status(400).json({
+      error: `Score ${rawScore} exceeds the maximum achievable score of ${MAX_ACHIEVABLE_SCORE}.`,
+    });
+  }
+  if (rawScore < MIN_ACHIEVABLE_SCORE) {
+    return res.status(400).json({
+      error: `Score ${rawScore} is below the minimum achievable score of ${MIN_ACHIEVABLE_SCORE}.`,
+    });
+  }
+
+  const rawSurrender = parseInt(body.surrenderRate, 10);
+  if (Number.isNaN(rawSurrender) || rawSurrender < 0 || rawSurrender > 100) {
+    return res.status(400).json({ error: "Invalid surrenderRate: must be an integer between 0 and 100." });
+  }
+
+  const bestScore = rawScore;
+  const surrenderRate = rawSurrender;
   const ts = Date.now();
 
   try {
