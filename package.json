@@ -1,9 +1,9 @@
 {
-  "name": "redflag",
+  "name": "spotthebs",
   "private": true,
   "version": "1.0.0",
   "type": "module",
-  "description": "Red Flag — a cognitive surrender gym. Catch confident-but-wrong AI answers.",
+  "description": "Spot the BS — is the AI bluffing? Catch confident-but-wrong AI answers.",
   "scripts": {
     "dev": "concurrently -k -n web,api -c blue,magenta \"vite\" \"node server.js\"",
     "build": "vite build",
