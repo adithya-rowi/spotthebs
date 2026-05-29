@@ -123,7 +123,7 @@ export default function RedFlag() {
   const [choice, setChoice] = useState(null); // "accept" | "flag"
   const [score, setScore] = useState(0);
   const [streak, setStreak] = useState(0);
-  const [tally, setTally] = useState({ catch: 0, surrender: 0, correctTrust: 0, falseAlarm: 0, wrongShown: 0, rightShown: 0 });
+  const [tally, setTally] = useState({ catch: 0, surrender: 0, correctTrust: 0, falseAlarm: 0, wrongShown: 0, rightShown: 0, mistakes: [] });
   const [board, setBoard] = useState([]);
   const [boardNote, setBoardNote] = useState("");
   const usedRef = useRef([]);
@@ -144,7 +144,7 @@ export default function RedFlag() {
     const fresh = shuffle(BANK);
     usedRef.current = [];
     setScore(0); setStreak(0); setRound(1);
-    setTally({ catch: 0, surrender: 0, correctTrust: 0, falseAlarm: 0, wrongShown: 0, rightShown: 0 });
+    setTally({ catch: 0, surrender: 0, correctTrust: 0, falseAlarm: 0, wrongShown: 0, rightShown: 0, mistakes: [] });
     setChoice(null);
     setScreen("play");
     setQueue(fresh);
@@ -162,11 +162,13 @@ export default function RedFlag() {
     setScore((s) => s + POINTS[kind]);
     const win = kind === "catch" || kind === "correctTrust";
     setStreak((st) => (win ? st + 1 : 0));
+    const isMistake = kind === "surrender" || kind === "falseAlarm";
     setTally((t) => ({
       ...t,
       [kind]: t[kind] + 1,
       wrongShown: t.wrongShown + (aiWrong ? 1 : 0),
       rightShown: t.rightShown + (aiWrong ? 0 : 1),
+      mistakes: isMistake ? [...t.mistakes, { ...item, kind }] : t.mistakes,
     }));
     setScreen("reveal");
   }
@@ -431,6 +433,40 @@ function Results({ score, surrenderRate, catchRate, tally, board, boardNote, sta
           ))}
         </div>
       </div>
+      {/* wrong calls review */}
+      {tally.mistakes && tally.mistakes.length > 0 && (
+        <div className="rf-rise" style={{ marginBottom: 14 }}>
+          <div style={{ ...tag(C.blood), fontSize: 12, marginBottom: 8 }}>Where you went wrong ({tally.mistakes.length})</div>
+          <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+            {tally.mistakes.map((m, i) => (
+              <div key={i} style={{ ...card, padding: 0, overflow: "hidden", borderTop: `3px solid ${m.kind === "surrender" ? C.blood : C.inkSoft}` }}>
+                <div style={{ padding: "10px 14px 8px" }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 6 }}>
+                    <span style={tag(m.kind === "surrender" ? C.blood : C.inkSoft)}>
+                      {m.kind === "surrender" ? "Surrendered to a lie" : "Flagged a correct answer"}
+                    </span>
+                    <span style={{ ...tag(C.inkSoft), marginLeft: "auto" }}>{m.domain}</span>
+                  </div>
+                  <p style={{ fontSize: 15, fontWeight: 500, lineHeight: 1.4, margin: "0 0 8px", color: C.ink }}>{m.q}</p>
+                </div>
+                <div style={{ background: C.ink, padding: "8px 14px" }}>
+                  <div className="rf-mono" style={{ fontSize: 10, letterSpacing: ".1em", color: "#aaa", marginBottom: 4 }}>AI SAID</div>
+                  <p className="rf-mono" style={{ fontSize: 13, lineHeight: 1.5, margin: 0, color: C.paper }}>{m.ai}</p>
+                </div>
+                <div style={{ padding: "10px 14px" }}>
+                  <div style={{ display: "flex", gap: 16, flexWrap: "wrap", marginBottom: 8 }}>
+                    <div>
+                      <div className="rf-mono" style={{ fontSize: 10, letterSpacing: ".1em", color: C.inkSoft, marginBottom: 2 }}>CORRECT ANSWER</div>
+                      <div className="rf-mono" style={{ fontSize: 13, fontWeight: 600, color: C.hold }}>{m.truth}</div>
+                    </div>
+                  </div>
+                  <p style={{ fontSize: 13, lineHeight: 1.5, margin: 0, color: C.inkSoft, fontStyle: "italic" }}>{m.why}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
       {boardNote && <div className="rf-mono" style={{ fontSize: 11, color: C.inkSoft, marginBottom: 10, textAlign: "center" }}>{boardNote}</div>}
       <div className="rf-rise" style={{ marginBottom: 16 }}>
         <div style={{ ...tag(C.ink), fontSize: 12, marginBottom: 8 }}>Team board</div>
