@@ -166,14 +166,15 @@ export default function RedFlag() {
   const css = `
 @import url('https://fonts.googleapis.com/css2?family=Anton&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,600;1,6..72,400&family=Spline+Sans+Mono:wght@400;500;600&display=swap');
 * { box-sizing: border-box; }
-.rf-root { font-family: 'Newsreader', Georgia, serif; color: ${C.ink}; }
+body { overflow-x: hidden; }
+.rf-root { font-family: 'Newsreader', Georgia, serif; color: ${C.ink}; overflow-x: hidden; }
 .rf-disp { font-family: 'Anton', Impact, sans-serif; letter-spacing: .02em; text-transform: uppercase; line-height: .92; }
 .rf-mono { font-family: 'Spline Sans Mono', ui-monospace, monospace; }
 @keyframes rfIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 @keyframes rfWave { 0%,100% { transform: rotate(-3deg); } 50% { transform: rotate(4deg); } }
 @keyframes rfPulse { 0%,100% { opacity:.5 } 50% { opacity:1 } }
 .rf-rise { animation: rfIn .5s cubic-bezier(.2,.8,.2,1) both; }
-.rf-btn { cursor: pointer; border: none; transition: transform .12s ease, box-shadow .12s ease; }
+.rf-btn { cursor: pointer; border: none; transition: transform .12s ease, box-shadow .12s ease; min-height: 48px; touch-action: manipulation; }
 .rf-btn:active { transform: translateY(1px) scale(.99); }
 .rf-paperbg { background:
    radial-gradient(circle at 12% 8%, rgba(192,33,31,.06), transparent 40%),
@@ -181,6 +182,20 @@ export default function RedFlag() {
    ${C.paper}; }
 .rf-grain { position:absolute; inset:0; opacity:.045; pointer-events:none; mix-blend-mode:multiply;
    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='80' height='80'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E"); }
+.rf-home-h1 { font-size: 46px; margin: 4px 0 8px; }
+.rf-grade-text { font-size: 40px; }
+.rf-q-text { font-size: 20px; }
+.rf-ai-text { font-size: 14px; }
+.rf-masthead-sub { display: block; }
+@media (max-width: 430px) {
+  .rf-home-h1 { font-size: 32px; }
+  .rf-grade-text { font-size: 30px; }
+  .rf-q-text { font-size: 17px; }
+  .rf-ai-text { font-size: 13px; }
+  .rf-masthead-sub { display: none; }
+  .rf-stats-row { flex-wrap: wrap; }
+  .rf-stats-row > * { flex: 1 1 40%; min-width: 80px; }
+}
 `;
   const wrap = { minHeight: "100vh", position: "relative", padding: "20px 16px 56px" };
   const inner = { maxWidth: 560, margin: "0 auto", position: "relative", zIndex: 1 };
@@ -198,7 +213,7 @@ export default function RedFlag() {
             <div style={{ position: "absolute", left: 5, top: 4, width: 2, height: 18, background: C.flag }} />
           </div>
           <div className="rf-disp" style={{ fontSize: 22 }}>Red&nbsp;Flag</div>
-          <div className="rf-mono" style={{ marginLeft: "auto", fontSize: 10, color: C.inkSoft, textAlign: "right", lineHeight: 1.3 }}>
+          <div className="rf-mono rf-masthead-sub" style={{ marginLeft: "auto", fontSize: 10, color: C.inkSoft, textAlign: "right", lineHeight: 1.3 }}>
             a cognitive<br />surrender gym
           </div>
         </div>
@@ -228,7 +243,7 @@ function Pill({ children, bg, fg }) {
 function Home({ name, setName, start, board, card, tag, C }) {
   return (
     <div>
-      <h1 className="rf-disp rf-rise" style={{ fontSize: 46, margin: "4px 0 8px", animationDelay: ".05s" }}>
+      <h1 className="rf-disp rf-rise rf-home-h1" style={{ animationDelay: ".05s" }}>
         Don't wave<br /><span style={{ color: C.blood }}>the white flag.</span>
       </h1>
       <p className="rf-rise" style={{ fontSize: 17, lineHeight: 1.5, color: C.inkSoft, margin: "0 0 22px", animationDelay: ".12s" }}>
@@ -307,7 +322,7 @@ function Play({ item, round, score, streak, choice, screen, decide, advance, car
       </div>
       <div style={{ ...card, padding: 18, marginBottom: 14 }} className="rf-rise" key={item.q}>
         <div style={tag(C.blood)}>{item.domain}</div>
-        <p style={{ fontSize: 20, lineHeight: 1.4, margin: "10px 0 0", fontWeight: 500 }}>{item.q}</p>
+        <p className="rf-q-text" style={{ lineHeight: 1.4, margin: "10px 0 0", fontWeight: 500 }}>{item.q}</p>
       </div>
       {/* AI dispatch */}
       <div style={{ ...card, padding: 0, overflow: "hidden", marginBottom: 16 }} className="rf-rise">
@@ -315,7 +330,7 @@ function Play({ item, round, score, streak, choice, screen, decide, advance, car
           <span className="rf-mono" style={{ fontSize: 11, letterSpacing: ".1em" }}>AI ASSISTANT</span>
           <span className="rf-mono" style={{ marginLeft: "auto", fontSize: 11, color: "#e8b3b2" }}>● {item.conf}% confident</span>
         </div>
-        <p className="rf-mono" style={{ fontSize: 14, lineHeight: 1.55, margin: 0, padding: "14px 16px", color: C.ink }}>{item.ai}</p>
+        <p className="rf-mono rf-ai-text" style={{ lineHeight: 1.55, margin: 0, padding: "14px 16px", color: C.ink }}>{item.ai}</p>
       </div>
       {screen === "play" && (
         <div style={{ display: "flex", gap: 10 }}>
@@ -368,9 +383,9 @@ function Results({ score, surrenderRate, catchRate, tally, board, boardNote, sta
     <div>
       <div className="rf-rise" style={{ ...card, padding: 20, borderTop: `5px solid ${grade.c}`, marginBottom: 14 }}>
         <div style={tag(C.inkSoft)}>{name ? name + "'s verdict" : "Verdict"}</div>
-        <div className="rf-disp" style={{ fontSize: 40, color: grade.c, margin: "4px 0 6px" }}>{grade.t}</div>
+        <div className="rf-disp rf-grade-text" style={{ color: grade.c, margin: "4px 0 6px" }}>{grade.t}</div>
         <p style={{ fontSize: 16, lineHeight: 1.5, margin: 0, color: C.ink }}>{grade.s}</p>
-        <div style={{ display: "flex", gap: 12, marginTop: 18 }}>
+        <div className="rf-stats-row" style={{ display: "flex", gap: 12, marginTop: 18, flexWrap: "wrap" }}>
           <Stat big label="Score" v={score} C={C} />
           <Stat big label="Surrender rate" v={surrenderRate + "%"} col={surrenderRate > 25 ? C.blood : C.hold} C={C} />
           <Stat big label="Catch rate" v={catchRate + "%"} col={C.hold} C={C} />
